@@ -28,18 +28,18 @@ Always work on a dedicated branch — **never commit directly to `main`**.
 Name your branch using the following format:
 
 ```
-week_<week-number>_<yourname>
+crypto_<yourname>
 ```
 
 **Examples:**
-- `week_1_alice`
-- `week_2_bob`
-- `week_3_carol`
+- `crypto_alice`
+- `crypto_bob`
+- `crypto_carol`
 
 Create and switch to your branch:
 
 ```bash
-git checkout -b week_1_yourname
+git checkout -b crypto_yourname
 ```
 
 ---
@@ -78,7 +78,7 @@ Keep commits small and focused so they are easy to review.
 Once your work is complete, push your branch to your fork:
 
 ```bash
-git push origin week_1_yourname
+git push origin crypto_yourname
 ```
 
 ---
@@ -87,7 +87,7 @@ git push origin week_1_yourname
 
 1. Go to the repository on GitHub.
 2. Click **"Compare & pull request"** (GitHub usually shows this banner after you push a branch).
-3. Set the **base branch** to `main` and the **compare branch** to `week_1_yourname`.
+3. Set the **base branch** to `main` and the **compare branch** to `crypto_yourname`.
 4. Fill in the PR title and description:
    - **Title:** `week_1_yourname — short summary`
    - **Description:** What issue you solved, what changes you made, and any notes for the reviewer.
