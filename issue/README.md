@@ -73,6 +73,53 @@ Keep commits small and focused so they are easy to review.
 
 ---
 
+
+## 4.1 Organize Your Work in Your Own Folder
+
+Each contributor must create a dedicated folder with their name and place all their issue work inside it.
+
+### Folder Naming Format
+
+```
+crypto_<yourname>
+```
+
+### Examples
+
+```
+crypto_alice/
+crypto_bob/
+crypto_carol/
+```
+
+### Structure Example
+
+Inside your folder, include all files related to your assigned issue:
+
+```
+crypto_alice/
+ ├── issue_1.md
+ ├── issue_2.py
+```
+
+### Steps
+
+1. Create your folder:
+
+```bash
+mkdir crypto_yourname
+```
+
+2. Add your files inside this folder.
+
+3. Stage and commit:
+
+```bash
+git add crypto_yourname/
+git commit -m "week_1_yourname: added issue solution in personal folder"
+```
+
+
 ## 5. Push Your Branch to GitHub
 
 Once your work is complete, push your branch to your fork:
