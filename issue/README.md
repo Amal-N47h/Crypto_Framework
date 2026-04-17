@@ -9,7 +9,7 @@ This guide explains how contributors should work on assigned issues and submit t
 If you haven't already, fork the repository on GitHub and clone your fork locally:
 
 ```bash
-git clone https://github.com/<your-username>/Crypto_Framework.git
+git clone https://github.com/Amal-N47h/Crypto_Framework.git
 cd Crypto_Framework
 ```
 
