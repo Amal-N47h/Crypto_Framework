@@ -2,6 +2,11 @@ name: Create IoMT Project Issues
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - copilot/create-github-issues-for-iomt-crypto-system
+    paths:
+      - '.github/workflows/create-issues.yml'
 
 jobs:
   create-issues:
