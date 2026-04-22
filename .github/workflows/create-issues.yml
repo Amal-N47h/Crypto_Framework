@@ -1,0 +1,242 @@
+name: Create IoMT Project Issues
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Create Issue 1 – Trusted Device Authentication & Verification
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Trusted Device Authentication & Verification" \
+            --body "## Description
+
+          Implement the trusted device authentication and onboarding flow for the IoMT pipeline. This module establishes which devices are permitted to send data and defines the full verification order that every receiver module must follow.
+
+          ## Tasks
+          - [ ] Validate trusted devices using device ID and registration logic
+          - [ ] Create trusted device list
+          - [ ] Define verification order at receiver: device → timestamp → nonce → signature → hash/HMAC → decryption
+          - [ ] Create first-time device authentication/onboarding flow (sender + receiver)
+
+          ## Dependencies
+          Depends on: None
+
+          ## Assignee
+          Noufan TN" \
+            --assignee "Amal-N47h" || true
+
+      - name: Create Issue 2 – SHA-256 Hashing & Shared Packet Structure Design
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "SHA-256 Hashing & Shared Packet Structure Design" \
+            --body "## Description
+
+          Design the shared packet structure used across all pipeline modules, and add SHA-256 integrity hashing so that any modification to a packet in transit can be detected by the receiver.
+
+          ## Tasks
+          - [ ] Design shared packet structure (used by all modules)
+          - [ ] Add hash_value field to packet
+          - [ ] Generate SHA-256 hash (sender side)
+          - [ ] Verify SHA-256 hash and detect modification (receiver side)
+
+          ## Dependencies
+          Depends on: #1
+
+          ## Assignee
+          Anit Benny" \
+            --assignee "Amal-N47h" || true
+
+      - name: Create Issue 3 – ECDSA Digital Signature (Sign & Verify)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "ECDSA Digital Signature (Sign & Verify)" \
+            --body "## Description
+
+          Add non-repudiation to the IoMT packet pipeline by signing packet content with ECDSA on the sender side and verifying the signature on the receiver side to confirm packet authenticity.
+
+          ## Tasks
+          - [ ] Sign packet content using ECDSA (sender side)
+          - [ ] Verify ECDSA signature for authenticity (receiver side)
+
+          ## Dependencies
+          Depends on: #2
+
+          ## Assignee
+          John Varghese" \
+            --assignee "Amal-N47h" || true
+
+      - name: Create Issue 4 – AES Mode Comparison & Justification (CBC vs GCM)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "AES Mode Comparison & Justification (CBC vs GCM)" \
+            --body "## Description
+
+          Evaluate AES-CBC and AES-GCM encryption modes against IoMT requirements, comparing security guarantees, performance overhead, and suitability for lightweight devices before selecting the final mode for the project.
+
+          ## Tasks
+          - [ ] Implement sample encryption using AES-CBC
+          - [ ] Implement sample encryption using AES-GCM
+          - [ ] Compare both modes on security, performance, overhead
+          - [ ] Justify and document final mode selection for IoMT
+
+          ## Dependencies
+          Depends on: #3
+
+          ## Assignee
+          Akhilamshah B" \
+            --assignee "Amal-N47h" || true
+
+      - name: Create Issue 5 – AES-128/256 Encryption & Decryption
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "AES-128/256 Encryption & Decryption" \
+            --body "## Description
+
+          Implement symmetric AES encryption and decryption for sample IoMT patient data using the mode selected in Issue #4, forming the core data-confidentiality layer of the pipeline.
+
+          ## Tasks
+          - [ ] Implement AES encryption for sample patient data using chosen mode (sender)
+          - [ ] Implement AES decryption (receiver side)
+
+          ## Dependencies
+          Depends on: #4
+
+          ## Assignee
+          Adithyan B" \
+            --assignee "Amal-N47h" || true
+
+      - name: Create Issue 6 – ECC Key Generation & AES Session Key Protection
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "ECC Key Generation & AES Session Key Protection" \
+            --body "## Description
+
+          Generate ECC public/private key pairs and use them to securely wrap the AES session key so it can be transmitted alongside the encrypted payload without exposing it to eavesdroppers.
+
+          ## Tasks
+          - [ ] Generate ECC public/private key pairs
+          - [ ] Encrypt AES session key using ECC public key (sender)
+          - [ ] Decrypt AES session key using ECC private key (receiver)
+
+          ## Dependencies
+          Depends on: #5
+
+          ## Assignee
+          Alwin T Varghese" \
+            --assignee "Amal-N47h" || true
+
+      - name: Create Issue 7 – Hybrid Encryption (AES + ECC Combined)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Hybrid Encryption (AES + ECC Combined)" \
+            --body "## Description
+
+          Combine the AES data encryption layer with the ECC key exchange layer into a unified hybrid encryption flow, building complete sender encryption and receiver decryption paths for the full IoMT packet.
+
+          ## Tasks
+          - [ ] Combine AES data encryption with ECC-secured key exchange
+          - [ ] Build full hybrid encryption flow (sender)
+          - [ ] Build full hybrid decryption flow (receiver)
+
+          ## Dependencies
+          Depends on: #5, #6
+
+          ## Assignee
+          Amal Nath V S" \
+            --assignee "Amal-N47h" || true
+
+      - name: Create Issue 8 – Secure IoMT Record Storage with Integrity Verification
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Secure IoMT Record Storage with Integrity Verification" \
+            --body "## Description
+
+          Implement persistent storage for encrypted IoMT records with integrity proofs attached, so that stored data can be verified for authenticity and completeness when retrieved.
+
+          ## Tasks
+          - [ ] Store encrypted IoMT records securely
+          - [ ] Attach integrity verification (hash/signature) to stored records
+          - [ ] Verify integrity on retrieval
+
+          ## Dependencies
+          Depends on: #7
+
+          ## Assignee
+          Fuad Haris" \
+            --assignee "Amal-N47h" || true
+
+      - name: Create Issue 9 – Replay Attack Protection (Timestamp + Nonce)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Replay Attack Protection (Timestamp + Nonce)" \
+            --body "## Description
+
+          Protect the IoMT pipeline against replay attacks by attaching timestamps and nonces to outgoing packets and detecting expired or duplicate packets on the receiver side.
+
+          ## Tasks
+          - [ ] Attach timestamp + nonce to packets (sender)
+          - [ ] Detect replayed or expired packets (receiver)
+          - [ ] Write script to simulate and identify replay attacks
+
+          ## Dependencies
+          Depends on: #8
+
+          ## Assignee
+          Sajan Baby P" \
+            --assignee "Amal-N47h" || true
+
+      - name: Create Issue 10 – Packet Classification – Tampering & Attack Detection
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Packet Classification – Tampering & Attack Detection" \
+            --body "## Description
+
+          Build the final verification layer that classifies every incoming IoMT packet as valid, tampered, replayed, or otherwise invalid, integrating the outputs of the storage and replay-protection modules.
+
+          ## Tasks
+          - [ ] Write script to classify packets as: valid / tampered / replayed / invalid
+          - [ ] Integrate with output from #8 and #9
+          - [ ] Simulate tampering scenarios and verify detection
+
+          ## Dependencies
+          Depends on: #8, #9
+
+          ## Assignee
+          Vimal Mudalagi" \
+            --assignee "Amal-N47h" || true
