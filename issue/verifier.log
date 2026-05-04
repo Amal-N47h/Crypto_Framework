@@ -1,0 +1,20 @@
+2026-05-04 21:31:42,295 - WARNING - 0a5985fe-46e2-4f15-9d2a-f1fcdb10f29c - REPLAYED - Old / expired packet
+2026-05-04 21:31:42,297 - WARNING - ec6625be-1ac9-4b40-a91b-4a466cdbe5e2 - INVALID_DEVICE - Unknown / unauthorized device
+2026-05-04 21:31:42,298 - WARNING - 49172465-02f1-46c9-b218-c5ca11a3c781 - REPLAYED - Old / expired packet
+2026-05-04 21:31:42,298 - INFO - 9a3a4400-2117-4c61-95ee-1659d58231a4 - VALID - All checks passed
+2026-05-04 21:31:42,302 - ERROR - a19c8ee4-0669-4b6b-a784-cebba01f5de1 - DECRYPTION_ERROR - Decryption failed
+2026-05-04 21:31:42,305 - INFO - 71f10edd-054c-4978-b4cd-475c8222029f - VALID - All checks passed
+2026-05-04 21:31:42,307 - ERROR - 19d2b8cd-3eed-43ba-b4b5-e4d130e5b5ed - DECRYPTION_ERROR - Decryption failed
+2026-05-04 21:31:42,309 - WARNING - 32b63211-76f5-41c7-9022-d28a75a9dbee - INVALID_DEVICE - Unknown / unauthorized device
+2026-05-04 21:31:42,310 - ERROR - 9e260e2e-db3d-48fc-a643-f49c7b728c35 - TAMPERED - HMAC mismatch (data tampered)
+2026-05-04 21:31:42,310 - WARNING - 9e9b02c8-55d7-4b6f-bf17-067698fd2e9f - INVALID_DEVICE - Unknown / unauthorized device
+2026-05-05 00:06:52,159 - WARNING - ca835677-5516-46ba-a4e8-0a129554dab4 - INVALID_FORMAT - Missing field: vitals
+2026-05-05 00:06:52,160 - WARNING - b8cdcdcf-87df-487d-be2e-fd6feac50661 - INVALID_FORMAT - Missing field: vitals
+2026-05-05 00:06:52,161 - WARNING - 87500641-0137-482c-bb31-4c945f4a1a61 - INVALID_FORMAT - Missing field: vitals
+2026-05-05 00:06:52,162 - WARNING - 2a50e10a-4209-45b2-b7c1-21b89db787e9 - INVALID_FORMAT - Missing field: vitals
+2026-05-05 00:06:52,163 - WARNING - ae5a1545-fdc2-4423-8bdb-88b5a699ebbd - INVALID_FORMAT - Missing field: vitals
+2026-05-05 00:06:52,165 - WARNING - 1fb66600-35a7-4de8-b4eb-e8d11bfa8f7c - INVALID_FORMAT - Missing field: vitals
+2026-05-05 00:06:52,165 - WARNING - 9d2691fd-a3f7-4be2-8999-bb764873d882 - INVALID_FORMAT - Missing field: vitals
+2026-05-05 00:06:52,165 - WARNING - fd53dad4-047c-4944-abad-1e645b52ee40 - INVALID_FORMAT - Missing field: vitals
+2026-05-05 00:06:52,166 - WARNING - 909f1cb4-1d2f-49b0-bf15-a494026ebacd - INVALID_FORMAT - Missing field: vitals
+2026-05-05 00:06:52,168 - WARNING - 3ae0ab1d-f454-4d89-bcb2-2c5e3bfb262f - INVALID_FORMAT - Missing field: vitals
