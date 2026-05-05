@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IoMT Packet Verification Dashboard</title>
+
+    <style>
+        body {
+            background: #0b132b;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            background: #1c2541;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #3a86ff;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        th {
+            background: #1c2541;
+        }
+
+        .VALID { color: #00ff88; }
+        .TAMPERED { color: red; }
+        .REPLAYED { color: orange; }
+        .INVALID_DEVICE { color: yellow; }
+        .INVALID_FORMAT { color: orange; }
+    </style>
+</head>
+
+<body>
+
+<h1>🛡️ IoMT Packet Verification Dashboard</h1>
+
+<textarea id="packetInput" placeholder="Paste JSON packet here..."></textarea>
+<br>
+<button onclick="verifyPacket()">Verify Packet</button>
+
+<table>
+    <thead>
+        <tr>
+            <th>Packet ID</th>
+            <th>Status</th>
+            <th>Reason</th>
+            <th>Device ID</th>
+            <th>Timestamp</th>
+            <th>Nonce</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody">
+        {% for r in results %}
+        <tr>
+            <td>{{ r.packet_id }}</td>
+            <td class="{{ r.status.value }}">{{ r.status.value }}</td>
+            <td>{{ r.reason }}</td>
+            <td>{{ r.device_id if r.device_id else '' }}</td>
+            <td>{{ r.timestamp if r.timestamp else '' }}</td>
+            <td>{{ r.nonce if r.nonce else '' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+function verifyPacket() {
+    const input = document.getElementById("packetInput").value;
+
+    let jsonData;
+    try {
+        jsonData = JSON.parse(input);
+    } catch (e) {
+        alert("Invalid JSON");
+        return;
+    }
+
+    fetch("/verify", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(jsonData)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        const table = document.getElementById("tableBody");
+
+        const row = `
+            <tr>
+                <td>${data.packet_id}</td>
+                <td class="${data.status}">${data.status}</td>
+                <td>${data.reason}</td>
+                <td>${jsonData.device_id || ''}</td>
+                <td>${jsonData.timestamp || ''}</td>
+                <td>${jsonData.nonce || ''}</td>
+            </tr>
+        `;
+        table.innerHTML = row + table.innerHTML;
+    });
+}
+</script>
+
+</body>
+</html>
