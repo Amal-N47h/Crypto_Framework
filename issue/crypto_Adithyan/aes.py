@@ -22,7 +22,7 @@ Expected payload format
         "temperature":    36.7,
         "blood_pressure": "120/80"
     },
-    "hash_value":  "dc0de086513660b3db958cf7889eaf2bfd7ea9acf710bf2e05250046f0d29cc1"
+    "signature":  "dc0de086513660b3db958cf7889eaf2bfd7ea9acf710bf2e05250046f0d29cc1"
 }
 """
 
@@ -169,7 +169,7 @@ def _demo():
             "temperature":    36.7,
             "blood_pressure": "120/80",
         },
-        "hash_value": "dc0de086513660b3db958cf7889eaf2bfd7ea9acf710bf2e05250046f0d29cc1",
+        "signature": "dc0de086513660b3db958cf7889eaf2bfd7ea9acf710bf2e05250046f0d29cc1",
     }
 
     print("\n[IN]      Received payload:")
