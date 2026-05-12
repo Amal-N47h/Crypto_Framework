@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="5">
+<title>IoMT Gateway — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#020d1a;--bg2:#041020;--glass:rgba(0,200,180,0.04);
+  --border:rgba(0,200,180,0.14);--border2:rgba(0,200,180,0.32);
+  --teal:#00c8b4;--teal2:#00e5cf;--green:#00ff9d;
+  --red:#ff3d5a;--amber:#ffb830;--purple:#c084fc;--blue:#3a86ff;
+  --text:#cce8e5;--muted:#4a7a75;
+}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 10% 0%,rgba(0,200,180,0.07) 0%,transparent 60%),
+             radial-gradient(ellipse 60% 50% at 90% 100%,rgba(0,240,255,0.05) 0%,transparent 55%)}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,200,180,0.022) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,200,180,0.022) 1px,transparent 1px);
+  background-size:48px 48px}
+.wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:32px 24px 64px}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-icon{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--teal),#00f0ff);display:flex;align-items:center;justify-content:center;font-size:22px;animation:glow 3s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 28px rgba(0,200,180,.45)}50%{box-shadow:0 0 48px rgba(0,200,180,.75)}}
+.logo-name{font-weight:700;font-size:20px}.logo-name em{color:var(--teal);font-style:normal}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.1em}
+.live{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+nav{display:flex;gap:8px}
+nav a{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:8px 18px;border-radius:6px;text-decoration:none;border:1px solid var(--border);color:var(--muted);transition:all .2s}
+nav a:hover{border-color:var(--teal);color:var(--teal)}
+nav a.active{background:rgba(0,200,180,.12);border-color:var(--teal);color:var(--teal2)}
+
+/* LABELS */
+.slbl{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--teal);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.slbl::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* STAT CARDS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:18px 22px;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+.stat-total::before{background:linear-gradient(90deg,var(--teal),#00f0ff)}
+.stat-valid::before{background:linear-gradient(90deg,var(--green),#00c87a)}
+.stat-bad::before{background:linear-gradient(90deg,var(--red),#c02040)}
+.stat-det::before{background:linear-gradient(90deg,var(--amber),#e07000)}
+.stat-lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.stat-num{font-size:36px;font-weight:700;margin-top:6px;letter-spacing:-0.02em}
+.stat-total .stat-num{color:var(--teal2)}.stat-valid .stat-num{color:var(--green)}
+.stat-bad .stat-num{color:var(--red)}.stat-det .stat-num{color:var(--amber)}
+.stat-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px}
+
+/* METRIC CARDS */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+@media(max-width:900px){.metric-grid{grid-template-columns:repeat(2,1fr)}}
+.mc{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.mc-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.mc-val{font-size:22px;font-weight:700}
+.mc-unit{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-left:3px}
+.mc-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:5px}
+.mc-bar{height:3px;border-radius:2px;margin-top:8px;background:var(--border);overflow:hidden}
+.mc-bar-fill{height:100%;border-radius:2px;transition:width .4s}
+.c-hmac .mc-val{color:var(--teal2)}.c-hmac .mc-bar-fill{background:var(--teal2)}
+.c-hash .mc-val{color:var(--green)}.c-hash .mc-bar-fill{background:var(--green)}
+.c-ecdsa .mc-val{color:var(--purple)}.c-ecdsa .mc-bar-fill{background:var(--purple)}
+.c-kyber .mc-val{color:var(--blue)}.c-kyber .mc-bar-fill{background:var(--blue)}
+.c-aes .mc-val{color:#22d3ee}.c-aes .mc-bar-fill{background:#22d3ee}
+.c-enc .mc-val{color:var(--amber)}.c-enc .mc-bar-fill{background:var(--amber)}
+.c-total .mc-val{color:var(--teal2)}.c-total .mc-bar-fill{background:var(--teal2)}
+.c-lat .mc-val{color:var(--red)}.c-lat .mc-bar-fill{background:var(--red)}
+
+/* CHARTS */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:700px){.chart-row{grid-template-columns:1fr}}
+.chart-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:20px}
+.chart-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
+
+/* DETECTION RING */
+.det-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:24px}
+.det-inner{display:grid;grid-template-columns:180px 1fr;gap:24px;align-items:center}
+@media(max-width:600px){.det-inner{grid-template-columns:1fr}}
+.ring-center{display:flex;flex-direction:column;align-items:center;gap:8px}
+.ring-lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.bk-rows{display:flex;flex-direction:column;gap:10px}
+.bk-row{display:flex;align-items:center;gap:10px}
+.bk-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.bk-lbl{font-size:12px;color:var(--muted);flex:1;min-width:160px}
+.bk-bar{flex:2;height:4px;border-radius:2px;background:var(--border);overflow:hidden}
+.bk-fill{height:100%;border-radius:2px}
+.bk-val{font-family:'IBM Plex Mono',monospace;font-size:12px;min-width:30px;text-align:right}
+
+/* TABLE */
+.card{background:var(--glass);border:1px solid var(--border);border-radius:16px;margin-bottom:24px;overflow:hidden}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:rgba(4,16,32,0.9);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;padding:11px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid rgba(0,200,180,0.06);vertical-align:middle}
+tbody tr{cursor:pointer;transition:background .15s}
+tbody tr:hover td{background:rgba(0,200,180,0.04)}
+tbody tr:last-child td{border-bottom:none}
+.mono{font-family:'IBM Plex Mono',monospace;font-size:11px}
+.badge{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 9px;border-radius:20px;font-weight:500;display:inline-block}
+.b-VALID{background:rgba(0,255,157,0.08);border:1px solid rgba(0,255,157,0.32);color:var(--green)}
+.b-TAMPERED,.b-DECRYPTION_ERROR{background:rgba(255,61,90,0.08);border:1px solid rgba(255,61,90,0.32);color:var(--red)}
+.b-REPLAYED{background:rgba(255,184,48,0.08);border:1px solid rgba(255,184,48,0.32);color:var(--amber)}
+.b-INVALID_DEVICE,.b-INVALID_FORMAT{background:rgba(255,184,48,0.08);border:1px solid rgba(255,184,48,0.32);color:var(--amber)}
+.ms{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(0,200,180,0.08);color:var(--teal)}
+
+/* EXPAND */
+.detail-row{display:none}.detail-row.open{display:table-row}
+.detail-inner-row{background:var(--bg2)}
+.dc{padding:16px 18px}
+.d4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+@media(max-width:640px){.d4{grid-template-columns:repeat(2,1fr)}}
+.vc{background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:10px 14px;text-align:center}
+.vc-num{font-size:20px;font-weight:700;color:var(--teal2)}
+.vc-unit{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+.vc-lbl{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
+.t8{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.tc{background:rgba(0,200,180,0.04);border:1px solid var(--border);border-radius:8px;padding:8px 12px}
+.tc-val{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
+.tc-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.div{border:none;border-top:1px solid var(--border);margin:10px 0}
+.kv{display:flex;gap:10px;margin-bottom:4px}
+.kv-k{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);min-width:130px}
+.kv-v{font-family:'IBM Plex Mono',monospace;font-size:11px;word-break:break-all}
+.sm{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--muted);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div>
+      <div class="logo-name">IoMT <em>Gateway</em></div>
+      <div class="logo-sub">PC 2 · receiver · verifier · metrics</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <div class="live"><span class="dot"></span>live · 5s refresh</div>
+    <nav>
+      <a href="/" class="active">dashboard</a>
+      <a href="/alerts">alerts{% if stats.alerts > 0 %} ({{ stats.alerts }}){% endif %}</a>
+      <a href="/devices">devices</a>
+      <form method="POST" action="/reset" style="display:inline">
+        <button type="submit" style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:8px 14px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,61,90,0.3);color:var(--red);background:transparent">reset</button>
+      </form>
+    </nav>
+  </div>
+</header>
+
+<!-- Packet Stats -->
+<div class="slbl">packet statistics</div>
+<div class="stats">
+  <div class="stat stat-total"><div class="stat-lbl">total received</div><div class="stat-num">{{ stats.total }}</div></div>
+  <div class="stat stat-valid"><div class="stat-lbl">accepted</div><div class="stat-num">{{ stats.valid }}</div></div>
+  <div class="stat stat-bad"><div class="stat-lbl">rejected</div><div class="stat-num">{{ stats.invalid }}</div></div>
+  <div class="stat stat-det">
+    <div class="stat-lbl">detection rate</div>
+    <div class="stat-num">{{ metrics.detection_rate }}%</div>
+    <div class="stat-sub">{{ metrics.alerts }}/{{ metrics.invalid }} attacks caught</div>
+  </div>
+</div>
+
+<!-- Timing metrics -->
+<div class="slbl">crypto step timings — avg ms</div>
+{% set t = metrics.timings %}
+{% set mx = [t.hmac_ms.avg, t.hash_ms.avg, t.ecdsa_ms.avg, t.kyber_ms.avg, t.aes_ms.avg, t.encrypt_ms.avg, t.total_ms.avg, 0.001] | max %}
+<div class="metric-grid">
+  <div class="mc c-hmac">
+    <div class="mc-label">Session auth</div>
+    <div><span class="mc-val">{{ t.hmac_ms.avg }}</span><span class="mc-unit">ms</span></div>
+    <div class="mc-sub">min {{ t.hmac_ms.min }} · max {{ t.hmac_ms.max }}</div>
+    <div class="mc-bar"><div class="mc-bar-fill" style="width:{{ [t.hmac_ms.avg/mx*100,2]|max }}%"></div></div>
+  </div>
+  <div class="mc c-hash">
+    <div class="mc-label">SHA-256 verify</div>
+    <div><span class="mc-val">{{ t.hash_ms.avg }}</span><span class="mc-unit">ms</span></div>
+    <div class="mc-sub">min {{ t.hash_ms.min }} · max {{ t.hash_ms.max }}</div>
+    <div class="mc-bar"><div class="mc-bar-fill" style="width:{{ [t.hash_ms.avg/mx*100,2]|max }}%"></div></div>
+  </div>
+  <div class="mc c-ecdsa">
+    <div class="mc-label">ECDSA verify</div>
+    <div><span class="mc-val">{{ t.ecdsa_ms.avg }}</span><span class="mc-unit">ms</span></div>
+    <div class="mc-sub">min {{ t.ecdsa_ms.min }} · max {{ t.ecdsa_ms.max }}</div>
+    <div class="mc-bar"><div class="mc-bar-fill" style="width:{{ [t.ecdsa_ms.avg/mx*100,2]|max }}%"></div></div>
+  </div>
+  <div class="mc c-kyber">
+    <div class="mc-label">Kyber512 decaps</div>
+    <div><span class="mc-val">{{ t.kyber_ms.avg }}</span><span class="mc-unit">ms</span></div>
+    <div class="mc-sub">min {{ t.kyber_ms.min }} · max {{ t.kyber_ms.max }}</div>
+    <div class="mc-bar"><div class="mc-bar-fill" style="width:{{ [t.kyber_ms.avg/mx*100,2]|max }}%"></div></div>
+  </div>
+  <div class="mc c-aes">
+    <div class="mc-label">AES-256-GCM decrypt</div>
+    <div><span class="mc-val">{{ t.aes_ms.avg }}</span><span class="mc-unit">ms</span></div>
+    <div class="mc-sub">min {{ t.aes_ms.min }} · max {{ t.aes_ms.max }}</div>
+    <div class="mc-bar"><div class="mc-bar-fill" style="width:{{ [t.aes_ms.avg/mx*100,2]|max }}%"></div></div>
+  </div>
+  <div class="mc c-enc">
+    <div class="mc-label">encrypt (device)</div>
+    <div><span class="mc-val">{{ t.encrypt_ms.avg }}</span><span class="mc-unit">ms</span></div>
+    <div class="mc-sub">min {{ t.encrypt_ms.min }} · max {{ t.encrypt_ms.max }}</div>
+    <div class="mc-bar"><div class="mc-bar-fill" style="width:{{ [t.encrypt_ms.avg/mx*100,2]|max }}%"></div></div>
+  </div>
+  <div class="mc c-total">
+    <div class="mc-label">total pipeline</div>
+    <div><span class="mc-val">{{ t.total_ms.avg }}</span><span class="mc-unit">ms</span></div>
+    <div class="mc-sub">min {{ t.total_ms.min }} · max {{ t.total_ms.max }}</div>
+    <div class="mc-bar"><div class="mc-bar-fill" style="width:{{ [t.total_ms.avg/mx*100,2]|max }}%"></div></div>
+  </div>
+  <div class="mc c-lat">
+    <div class="mc-label">network latency</div>
+    <div><span class="mc-val">{{ t.latency_ms.avg }}</span><span class="mc-unit">ms</span></div>
+    <div class="mc-sub">min {{ t.latency_ms.min }} · max {{ t.latency_ms.max }}</div>
+    <div class="mc-bar"><div class="mc-bar-fill" style="width:{{ [t.latency_ms.avg/mx*100,2]|max }}%"></div></div>
+  </div>
+</div>
+
+<!-- Charts -->
+{% if metrics.history %}
+<div class="slbl">performance history — last {{ metrics.history|length }} valid packets</div>
+<div class="chart-row">
+  <div class="chart-card">
+    <div class="chart-title">total verification pipeline (ms)</div>
+    <canvas id="cTotal" height="110"></canvas>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">encryption time — kyber + aes-gcm (ms)</div>
+    <canvas id="cEnc" height="110"></canvas>
+  </div>
+</div>
+{% endif %}
+
+<!-- Detection ring -->
+<div class="slbl">detection rate breakdown</div>
+<div class="det-card">
+  <div class="det-inner">
+    <div class="ring-center">
+      <canvas id="ring" width="160" height="160"></canvas>
+      <div class="ring-lbl">detection rate</div>
+    </div>
+    <div class="bk-rows">
+      {% set tot = stats.total if stats.total > 0 else 1 %}
+      <div class="bk-row">
+        <div class="bk-dot" style="background:var(--green)"></div>
+        <div class="bk-lbl">Valid packets accepted</div>
+        <div class="bk-bar"><div class="bk-fill" style="width:{{ stats.valid/tot*100 }}%;background:var(--green)"></div></div>
+        <div class="bk-val" style="color:var(--green)">{{ stats.valid }}</div>
+      </div>
+      <div class="bk-row">
+        <div class="bk-dot" style="background:var(--red)"></div>
+        <div class="bk-lbl">Attacks detected &amp; rejected</div>
+        <div class="bk-bar"><div class="bk-fill" style="width:{{ metrics.alerts/tot*100 }}%;background:var(--red)"></div></div>
+        <div class="bk-val" style="color:var(--red)">{{ metrics.alerts }}</div>
+      </div>
+      <div class="bk-row">
+        <div class="bk-dot" style="background:var(--amber)"></div>
+        <div class="bk-lbl">Total rejected packets</div>
+        <div class="bk-bar"><div class="bk-fill" style="width:{{ stats.invalid/tot*100 }}%;background:var(--amber)"></div></div>
+        <div class="bk-val" style="color:var(--amber)">{{ stats.invalid }}</div>
+      </div>
+      <div class="bk-row" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <div class="bk-dot" style="background:var(--amber)"></div>
+        <div class="bk-lbl" style="font-weight:600;color:var(--text)">Overall Detection Rate</div>
+        <div style="flex:2"></div>
+        <div class="bk-val" style="color:var(--amber);font-size:20px;font-weight:700">{{ metrics.detection_rate }}%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Packets table -->
+<div class="slbl">received packets <span style="margin-left:auto;font-size:10px;color:var(--muted);letter-spacing:.04em;text-transform:none;font-family:'IBM Plex Mono',monospace">click row to expand</span></div>
+<div class="card">
+  {% if not packets %}
+  <div style="padding:32px;text-align:center;color:var(--muted);font-size:13px">Waiting for packets from device PC...</div>
+  {% else %}
+  <div class="tbl-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>pkt id</th><th>device</th><th>timestamp</th><th>status</th>
+        <th>total ms</th><th>encrypt ms</th><th>kyber ms</th><th>aes ms</th><th>latency ms</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for p in packets %}
+      <tr onclick="toggle('d{{ p.id }}')">
+        <td class="mono" style="color:var(--teal)">{{ p.packet_id }}</td>
+        <td style="font-weight:600">{{ p.device_id }}</td>
+        <td class="mono" style="color:var(--muted);white-space:nowrap">{{ p.timestamp[:19] if p.timestamp else '—' }}</td>
+        <td><span class="badge b-{{ p.status }}">{{ p.status }}</span></td>
+        <td><span class="ms">{{ p.total_ms or 0 }}</span></td>
+        <td><span class="ms">{{ p.encrypt_ms or 0 }}</span></td>
+        <td><span class="ms">{{ p.kyber_ms or 0 }}</span></td>
+        <td><span class="ms">{{ p.aes_ms or 0 }}</span></td>
+        <td><span class="ms">{{ p.latency_ms or 0 }}</span></td>
+      </tr>
+      <tr class="detail-row" id="d{{ p.id }}">
+        <td colspan="9" class="detail-inner-row" style="padding:0">
+          <div class="dc">
+            {% if p.status == 'VALID' and p.vitals %}
+            <div class="sm">decrypted vitals</div>
+            <div class="d4">
+              <div class="vc"><div class="vc-num">{{ p.vitals.heart_rate }}</div><div class="vc-unit">bpm</div><div class="vc-lbl">heart rate</div></div>
+              <div class="vc"><div class="vc-num">{{ p.vitals.spo2 }}</div><div class="vc-unit">%</div><div class="vc-lbl">spo2</div></div>
+              <div class="vc"><div class="vc-num">{{ p.vitals.temperature }}</div><div class="vc-unit">°c</div><div class="vc-lbl">temperature</div></div>
+              <div class="vc"><div class="vc-num" style="font-size:15px">{{ p.vitals.blood_pressure }}</div><div class="vc-unit">mmHg</div><div class="vc-lbl">blood pressure</div></div>
+            </div>
+            <div class="div"></div>
+            {% endif %}
+            <div class="sm">step timings</div>
+            <div class="t8">
+              <div class="tc"><div class="tc-val" style="color:var(--teal2)">{{ p.hmac_ms or 0 }} ms</div><div class="tc-lbl">session lookup</div></div>
+              <div class="tc"><div class="tc-val" style="color:var(--green)">{{ p.hash_ms or 0 }} ms</div><div class="tc-lbl">hash verify</div></div>
+              <div class="tc"><div class="tc-val" style="color:var(--purple)">{{ p.ecdsa_ms or 0 }} ms</div><div class="tc-lbl">ECDSA verify</div></div>
+              <div class="tc"><div class="tc-val" style="color:var(--blue)">{{ p.kyber_ms or 0 }} ms</div><div class="tc-lbl">Kyber512</div></div>
+              <div class="tc"><div class="tc-val" style="color:#22d3ee">{{ p.aes_ms or 0 }} ms</div><div class="tc-lbl">AES decrypt</div></div>
+              <div class="tc"><div class="tc-val" style="color:var(--amber)">{{ p.encrypt_ms or 0 }} ms</div><div class="tc-lbl">encrypt (dev)</div></div>
+              <div class="tc"><div class="tc-val" style="color:var(--teal2)">{{ p.total_ms or 0 }} ms</div><div class="tc-lbl">total pipeline</div></div>
+              <div class="tc"><div class="tc-val" style="color:var(--red)">{{ p.latency_ms or 0 }} ms</div><div class="tc-lbl">latency</div></div>
+            </div>
+            <div class="div"></div>
+            <div class="sm">packet fields</div>
+            <div class="kv"><span class="kv-k">session_token</span><span class="kv-v">{{ p.session_token or "—" }}</span></div>
+            <div class="kv"><span class="kv-k">nonce</span><span class="kv-v">{{ p.nonce }}</span></div>
+            <div class="kv"><span class="kv-k">signature</span><span class="kv-v">{{ p.signature }}</span></div>
+            <div class="kv"><span class="kv-k">encrypted_data</span><span class="kv-v">{{ p.encrypted_data }}</span></div>
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+</div>
+
+</div>
+<script>
+function toggle(id){document.getElementById(id).classList.toggle('open')}
+
+function spark(id,data,color){
+  const el=document.getElementById(id);if(!el||!data.length)return;
+  const W=el.parentElement.clientWidth-40||460,H=110;
+  el.width=W;el.height=H;
+  const g=el.getContext('2d'),mx=Math.max(...data,0.001);
+  g.strokeStyle='rgba(0,200,180,0.07)';g.lineWidth=1;
+  [.25,.5,.75,1].forEach(f=>{g.beginPath();g.moveTo(0,H-f*H*.85-8);g.lineTo(W,H-f*H*.85-8);g.stroke()});
+  const pts=data.map((v,i)=>[i/(data.length-1||1)*W,H-(v/mx)*H*.85-8]);
+  const gr=g.createLinearGradient(0,0,0,H);
+  gr.addColorStop(0,color+'50');gr.addColorStop(1,color+'00');
+  g.beginPath();g.moveTo(pts[0][0],H);
+  pts.forEach(p=>g.lineTo(p[0],p[1]));
+  g.lineTo(pts[pts.length-1][0],H);g.closePath();g.fillStyle=gr;g.fill();
+  g.beginPath();g.strokeStyle=color;g.lineWidth=2;
+  pts.forEach((p,i)=>i===0?g.moveTo(p[0],p[1]):g.lineTo(p[0],p[1]));g.stroke();
+  pts.forEach((p,i)=>{
+    g.beginPath();g.arc(p[0],p[1],3,0,Math.PI*2);g.fillStyle=color;g.fill();
+    if(i%Math.ceil(data.length/5)===0){
+      g.fillStyle='rgba(74,122,117,0.9)';g.font='9px IBM Plex Mono';
+      g.textAlign='center';g.fillText(data[i].toFixed(2),p[0],H-1);
+    }
+  });
+}
+
+function ring(rate){
+  const c=document.getElementById('ring');if(!c)return;
+  const g=c.getContext('2d'),cx=80,cy=80,r=62,lw=13;
+  g.clearRect(0,0,160,160);
+  g.beginPath();g.arc(cx,cy,r,0,Math.PI*2);
+  g.strokeStyle='rgba(0,200,180,0.1)';g.lineWidth=lw;g.stroke();
+  const col=rate>=90?'#00ff9d':rate>=70?'#ffb830':'#ff3d5a';
+  g.beginPath();g.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+(rate/100)*Math.PI*2);
+  g.strokeStyle=col;g.lineWidth=lw;g.lineCap='round';g.stroke();
+  g.fillStyle=col;g.font='bold 24px IBM Plex Sans';
+  g.textAlign='center';g.textBaseline='middle';
+  g.fillText(rate+'%',cx,cy-8);
+  g.fillStyle='rgba(74,122,117,0.9)';g.font='10px IBM Plex Mono';
+  g.fillText('detected',cx,cy+10);
+}
+
+{% if metrics.history %}
+const h={{ metrics.history | tojson }};
+spark('cTotal', h.map(x=>x.total_ms||0),   '#00e5cf');
+spark('cEnc',   h.map(x=>(x.kyber_ms||0)+(x.aes_ms||0)), '#ffb830');
+{% endif %}
+
+ring({{ metrics.detection_rate }});
+</script>
+</body>
+</html>

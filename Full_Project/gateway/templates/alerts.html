@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="5">
+<title>IoMT Gateway — Alerts</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #020d1a; --bg2: #041020; --glass: rgba(0,200,180,0.04);
+  --border: rgba(0,200,180,0.14); --teal: #00c8b4; --teal2: #00e5cf;
+  --green: #00ff9d; --red: #ff3d5a; --amber: #ffb830;
+  --text: #cce8e5; --muted: #4a7a75;
+}
+body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; min-height: 100vh; }
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse 80% 60% at 10% 0%, rgba(0,200,180,0.07) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 50% at 90% 100%, rgba(255,61,90,0.04) 0%, transparent 55%);
+}
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(0,200,180,0.022) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,200,180,0.022) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.wrap { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 32px 24px 64px; }
+
+header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 36px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.logo { display: flex; align-items: center; gap: 14px; }
+.logo-icon { width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, var(--red), #c02040); display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 28px rgba(255,61,90,0.4); animation: glow-red 2s ease-in-out infinite; }
+@keyframes glow-red { 0%,100% { box-shadow: 0 0 28px rgba(255,61,90,0.4); } 50% { box-shadow: 0 0 48px rgba(255,61,90,0.7); } }
+.logo-name { font-weight: 700; font-size: 20px; }
+.logo-name em { color: var(--red); font-style: normal; }
+.logo-sub { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 3px; letter-spacing: .1em; }
+.live-dot { display: flex; align-items: center; gap: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: blink 1s ease-in-out infinite; }
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:.2; } }
+
+nav { display: flex; gap: 8px; }
+nav a { font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 8px 18px; border-radius: 6px; text-decoration: none; border: 1px solid var(--border); color: var(--muted); transition: all .2s; }
+nav a:hover { border-color: var(--teal); color: var(--teal); }
+nav a.active { background: rgba(255,61,90,0.1); border-color: rgba(255,61,90,0.4); color: var(--red); }
+
+.slbl { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .2em; color: var(--teal); text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.slbl::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ALERT COUNT BANNER */
+.alert-banner {
+  border-radius: 14px; padding: 18px 24px; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 18px;
+  background: rgba(255,61,90,0.06); border: 1px solid rgba(255,61,90,0.25);
+}
+.alert-banner.clean { background: rgba(0,255,157,0.05); border-color: rgba(0,255,157,0.25); }
+.ab-icon { font-size: 28px; }
+.ab-count { font-size: 36px; font-weight: 700; color: var(--red); }
+.alert-banner.clean .ab-count { color: var(--green); }
+.ab-label { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.ab-sub   { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+/* STAT ROW */
+.stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 28px; }
+.stat-mini { background: rgba(0,200,180,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; }
+.sm-num  { font-size: 28px; font-weight: 700; }
+.sm-lbl  { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
+.sm-red    .sm-num { color: var(--red); }
+.sm-amber  .sm-num { color: var(--amber); }
+.sm-yellow .sm-num { color: #ffe066; }
+
+/* ALERT BOX */
+.alert-box { border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; border: 1px solid; animation: fadeUp .3s ease; position: relative; overflow: hidden; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.alert-box::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 12px 0 0 12px; }
+.a-TAMPERED         { background: rgba(255,61,90,0.06);  border-color: rgba(255,61,90,0.28); }
+.a-TAMPERED::before { background: var(--red); }
+.a-REPLAYED         { background: rgba(255,184,48,0.06); border-color: rgba(255,184,48,0.28); }
+.a-REPLAYED::before { background: var(--amber); }
+.a-INVALID_DEVICE   { background: rgba(255,184,48,0.06); border-color: rgba(255,184,48,0.28); }
+.a-INVALID_SESSION  { background: rgba(255,184,48,0.06); border-color: rgba(255,184,48,0.28); }
+.a-INVALID_DEVICE::before { background: var(--amber); }
+.a-INVALID_SESSION::before { background: var(--amber); }
+.a-INVALID_FORMAT   { background: rgba(255,184,48,0.06); border-color: rgba(255,184,48,0.28); }
+.a-INVALID_FORMAT::before { background: #ffe066; }
+.a-DECRYPTION_ERROR { background: rgba(255,61,90,0.06);  border-color: rgba(255,61,90,0.28); }
+.a-DECRYPTION_ERROR::before { background: var(--red); }
+
+.alert-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.a-type-row { display: flex; align-items: center; gap: 10px; }
+.a-icon { font-size: 20px; }
+.a-type { font-weight: 700; font-size: 15px; letter-spacing: .02em; }
+.a-TAMPERED .a-type         { color: var(--red); }
+.a-REPLAYED .a-type         { color: var(--amber); }
+.a-INVALID_DEVICE .a-type   { color: var(--amber); }
+.a-INVALID_SESSION .a-type  { color: var(--amber); }
+.a-INVALID_FORMAT .a-type   { color: #ffe066; }
+.a-DECRYPTION_ERROR .a-type { color: var(--red); }
+
+.a-time { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); text-align: right; line-height: 1.6; }
+.a-reason { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.a-meta-row { display: flex; gap: 16px; }
+.a-meta { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); }
+.a-meta span { color: var(--teal); }
+
+.empty { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 13px; }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg2); } ::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🚨</div>
+      <div>
+        <div class="logo-name">IoMT <em>Alerts</em></div>
+        <div class="logo-sub">PC 2 · security · attack detection</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px">
+      <div class="live-dot"><span class="dot"></span> live · auto-refresh 5s</div>
+      <nav>
+        <a href="/">dashboard</a>
+        <a href="/alerts" class="active">alerts</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Alert count banner -->
+  {% if alerts %}
+  <div class="alert-banner">
+    <div class="ab-icon">⚠️</div>
+    <div>
+      <div class="ab-count">{{ alerts|length }}</div>
+      <div class="ab-label">security alert{{ 's' if alerts|length != 1 else '' }} detected</div>
+      <div class="ab-sub">{{ stats.total }} total packets · {{ stats.valid }} accepted · {{ stats.invalid }} rejected</div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert-banner clean">
+    <div class="ab-icon">✅</div>
+    <div>
+      <div class="ab-count">0</div>
+      <div class="ab-label">no attacks detected — system is clean</div>
+      <div class="ab-sub">{{ stats.total }} total packets received · all verified</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- By-type stats -->
+  {% if alerts %}
+  {% set tamper_count  = alerts | selectattr('alert_type', 'in', ['TAMPERED','DECRYPTION_ERROR']) | list | length %}
+  {% set replay_count  = alerts | selectattr('alert_type', 'equalto', 'REPLAYED') | list | length %}
+  {% set device_count  = alerts | selectattr('alert_type', 'in', ['INVALID_DEVICE','INVALID_FORMAT','INVALID_SESSION']) | list | length %}
+  <div class="stat-row">
+    <div class="stat-mini sm-red">
+      <div class="sm-num">{{ tamper_count }}</div>
+      <div class="sm-lbl">tamper / decryption</div>
+    </div>
+    <div class="stat-mini sm-amber">
+      <div class="sm-num">{{ replay_count }}</div>
+      <div class="sm-lbl">replay attacks</div>
+    </div>
+    <div class="stat-mini sm-yellow">
+      <div class="sm-num">{{ device_count }}</div>
+      <div class="sm-lbl">invalid device / format</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Alert list -->
+  <div class="slbl">attack log</div>
+
+  {% if not alerts %}
+  <div class="empty">
+    <div class="empty-icon">🛡️</div>
+    No alerts yet. All packets verified successfully.
+  </div>
+  {% endif %}
+
+  {% for a in alerts %}
+  <div class="alert-box a-{{ a.alert_type }}">
+    <div class="alert-header">
+      <div class="a-type-row">
+        <span class="a-icon">
+          {{ '🚨' if a.alert_type in ['TAMPERED','DECRYPTION_ERROR'] else '⟳' if a.alert_type=='REPLAYED' else '🔐' if a.alert_type=='INVALID_SESSION' else '⚠️' }}
+        </span>
+        <span class="a-type">
+          {% if a.alert_type == 'TAMPERED' %}Tamper Attack
+          {% elif a.alert_type == 'REPLAYED' %}Replay Attack
+          {% elif a.alert_type == 'INVALID_DEVICE' %}Unknown Device
+          {% elif a.alert_type == 'INVALID_FORMAT' %}Invalid Format
+          {% elif a.alert_type == 'INVALID_SESSION' %}Invalid Session
+          {% elif a.alert_type == 'DECRYPTION_ERROR' %}Decryption Error
+          {% else %}{{ a.alert_type }}
+          {% endif %}
+        </span>
+      </div>
+      <div class="a-time">
+        {{ a.timestamp[:10] if a.timestamp else '' }}<br>
+        {{ a.timestamp[11:19] if a.timestamp and a.timestamp|length > 10 else '' }}
+      </div>
+    </div>
+    <div class="a-reason">{{ a.reason }}</div>
+    <div class="a-meta-row">
+      <div class="a-meta">device <span>{{ a.device_id }}</span></div>
+      <div class="a-meta">packet <span>#{{ a.packet_id }}</span></div>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="refresh" content="10">
+<title>IoMT — Device Registry</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#020d1a;--bg2:#041020;--glass:rgba(0,200,180,0.04);--border:rgba(0,200,180,0.14);
+  --teal:#00c8b4;--teal2:#00e5cf;--green:#00ff9d;--red:#ff3d5a;--amber:#ffb830;--text:#cce8e5;--muted:#4a7a75}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 10% 0%,rgba(0,200,180,0.07) 0%,transparent 60%),
+             radial-gradient(ellipse 60% 50% at 90% 100%,rgba(0,240,255,0.05) 0%,transparent 55%)}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,200,180,0.022) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,200,180,0.022) 1px,transparent 1px);background-size:48px 48px}
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:32px 24px 64px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-icon{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--teal),#00f0ff);display:flex;align-items:center;justify-content:center;font-size:22px;animation:glow 3s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 28px rgba(0,200,180,.45)}50%{box-shadow:0 0 48px rgba(0,200,180,.75)}}
+.logo-name{font-weight:700;font-size:20px}.logo-name em{color:var(--teal);font-style:normal}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.1em}
+nav{display:flex;gap:8px}
+nav a{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:8px 18px;border-radius:6px;text-decoration:none;border:1px solid var(--border);color:var(--muted);transition:all .2s}
+nav a:hover{border-color:var(--teal);color:var(--teal)}
+nav a.active{background:rgba(0,200,180,.12);border-color:var(--teal);color:var(--teal2)}
+.slbl{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--teal);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.slbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+.stat{background:var(--glass);border:1px solid var(--border);border-radius:14px;padding:16px 20px;text-align:center}
+.stat-num{font-size:32px;font-weight:700}.stat-lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;margin-bottom:28px}
+.dc{background:var(--glass);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:border-color .2s}
+.dc:hover{border-color:rgba(0,200,180,.32)}
+.dc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:14px 0 0 14px}
+.dc.active::before{background:var(--green)}.dc.suspended::before{background:var(--amber)}.dc.blocked::before{background:var(--red)}
+.dh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.did{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:14px}
+.badge{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 10px;border-radius:20px;font-weight:600}
+.ba{background:rgba(0,255,157,.1);border:1px solid rgba(0,255,157,.35);color:var(--green)}
+.bs{background:rgba(255,184,48,.1);border:1px solid rgba(255,184,48,.35);color:var(--amber)}
+.bb{background:rgba(255,61,90,.1);border:1px solid rgba(255,61,90,.35);color:var(--red)}
+.kv{display:flex;gap:10px;margin-bottom:6px}
+.kk{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);min-width:110px;text-transform:uppercase;letter-spacing:.06em}
+.kv_{font-family:'IBM Plex Mono',monospace;font-size:12px}
+.fbar{height:4px;border-radius:2px;background:var(--border);overflow:hidden;margin-top:10px}
+.ffill{height:100%;border-radius:2px;background:var(--red);transition:width .4s}
+.acts{display:flex;gap:8px;margin-top:14px}
+.btn-s{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:6px 14px;border-radius:6px;cursor:pointer;border:1px solid;transition:all .2s}
+.btn-sus{border-color:rgba(255,184,48,.4);color:var(--amber);background:rgba(255,184,48,.06)}
+.btn-act{border-color:rgba(0,255,157,.4);color:var(--green);background:rgba(0,255,157,.06)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--muted);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div><div class="logo-name">IoMT <em>Device Registry</em></div>
+    <div class="logo-sub">PC 2 · registered devices · access control</div></div>
+  </div>
+  <nav>
+    <a href="/">dashboard</a>
+    <a href="/alerts">alerts{% if stats.alerts>0 %} ({{stats.alerts}}){% endif %}</a>
+    <a href="/devices" class="active">devices</a>
+  </nav>
+</header>
+
+{% set active_n    = devices|selectattr('status','equalto','ACTIVE')|list|length %}
+{% set suspended_n = devices|selectattr('status','equalto','SUSPENDED')|list|length %}
+{% set blocked_n   = devices|selectattr('status','equalto','BLOCKED')|list|length %}
+<div class="stats">
+  <div class="stat"><div class="stat-num" style="color:var(--green)">{{active_n}}</div><div class="stat-lbl">active</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--amber)">{{suspended_n}}</div><div class="stat-lbl">suspended</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--red)">{{blocked_n}}</div><div class="stat-lbl">blocked</div></div>
+</div>
+
+<div class="slbl">registered devices — {{devices|length}} total</div>
+<div class="grid">
+{% for d in devices %}
+{% set sl = d.status|lower %}
+<div class="dc {{sl}}">
+  <div class="dh">
+    <div class="did">{{d.device_id}}</div>
+    <span class="badge {{'ba' if d.status=='ACTIVE' else 'bs' if d.status=='SUSPENDED' else 'bb'}}">
+      {{'🟢' if d.status=='ACTIVE' else '🟡' if d.status=='SUSPENDED' else '🔴'}} {{d.status}}
+    </span>
+  </div>
+  <div class="kv"><span class="kk">registered</span><span class="kv_">{{(d.registered_at or '')[:19]}}</span></div>
+  <div class="kv"><span class="kk">last seen</span><span class="kv_">{{(d.last_seen or 'never')[:19]}}</span></div>
+  <div class="kv"><span class="kk">failed auth</span>
+    <span class="kv_" style="color:{{'var(--red)' if d.failed_attempts>=3 else 'var(--muted)'}}">{{d.failed_attempts}} / 5</span>
+  </div>
+  {% if d.notes %}<div class="kv"><span class="kk">notes</span><span class="kv_" style="color:var(--amber)">{{d.notes}}</span></div>{% endif %}
+  <div class="fbar"><div class="ffill" style="width:{{[d.failed_attempts/5*100,0]|max}}%"></div></div>
+  <div class="acts">
+    {% if d.status=='ACTIVE' %}
+    <form method="POST" action="/device/suspend" style="display:inline">
+      <input type="hidden" name="device_id" value="{{d.device_id}}">
+      <button type="submit" class="btn-s btn-sus">⏸ suspend</button>
+    </form>
+    {% elif d.status in ['SUSPENDED','BLOCKED'] %}
+    <form method="POST" action="/device/unblock" style="display:inline">
+      <input type="hidden" name="device_id" value="{{d.device_id}}">
+      <button type="submit" class="btn-s btn-act">▶ reactivate</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+</div>
+</div>
+</body>
+</html>
