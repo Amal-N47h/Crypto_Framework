@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IoMT Device — Packet Sender</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #020d1a; --bg2: #041020; --glass: rgba(0,200,180,0.04);
+  --border: rgba(0,200,180,0.14); --border2: rgba(0,200,180,0.32);
+  --teal: #00c8b4; --teal2: #00e5cf; --green: #00ff9d;
+  --red: #ff3d5a; --amber: #ffb830; --purple: #c084fc;
+  --text: #cce8e5; --muted: #4a7a75;
+}
+body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse 80% 60% at 10% 0%, rgba(0,200,180,0.07) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 50% at 90% 100%, rgba(0,240,255,0.05) 0%, transparent 55%);
+}
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(0,200,180,0.022) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,200,180,0.022) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.wrap { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 32px 24px 64px; }
+
+header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 36px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.logo { display: flex; align-items: center; gap: 14px; }
+.logo-icon { width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #3a86ff, #5e60ce); display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 28px rgba(58,134,255,0.45); animation: glow 3s ease-in-out infinite; }
+@keyframes glow { 0%,100% { box-shadow: 0 0 28px rgba(58,134,255,0.45); } 50% { box-shadow: 0 0 48px rgba(58,134,255,0.7); } }
+.logo-name { font-weight: 700; font-size: 20px; }
+.logo-name em { color: #3a86ff; font-style: normal; }
+.logo-sub { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 3px; letter-spacing: .1em; }
+.pc-badge { font-family: 'IBM Plex Mono', monospace; font-size: 10px; padding: 5px 14px; border-radius: 20px; background: rgba(58,134,255,0.1); border: 1px solid rgba(58,134,255,0.3); color: #3a86ff; }
+
+.slbl { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .2em; color: var(--teal); text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.slbl::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* GATEWAY CONNECTION */
+.conn-card { background: var(--glass); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 20px; }
+.conn-status { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.conn-dot { width: 10px; height: 10px; border-radius: 50%; }
+.conn-dot.ok  { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.conn-dot.off { background: var(--muted); }
+.conn-label { font-size: 13px; font-weight: 500; }
+.conn-url { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--teal2); }
+.conn-row { display: flex; gap: 10px; }
+.conn-input { flex: 1; font-family: 'IBM Plex Mono', monospace; font-size: 13px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); outline: none; }
+.conn-input:focus { border-color: var(--teal); }
+.btn-fetch { font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 10px 18px; border-radius: 8px; background: rgba(58,134,255,0.15); border: 1px solid rgba(58,134,255,0.4); color: #3a86ff; cursor: pointer; white-space: nowrap; transition: all .2s; }
+.btn-fetch:hover { box-shadow: 0 0 16px rgba(58,134,255,0.25); }
+
+/* RESULT BANNER */
+.banner { border-radius: 12px; padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px; animation: slideIn .35s ease; }
+@keyframes slideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+.banner-VALID       { background: rgba(0,255,157,0.05); border: 1px solid rgba(0,255,157,0.28); }
+.banner-TAMPERED    { background: rgba(255,61,90,0.05);  border: 1px solid rgba(255,61,90,0.28); }
+.banner-REPLAYED    { background: rgba(255,184,48,0.05); border: 1px solid rgba(255,184,48,0.28); }
+.banner-INVALID_DEVICE  { background: rgba(255,184,48,0.05); border: 1px solid rgba(255,184,48,0.28); }
+.banner-INVALID_FORMAT  { background: rgba(255,184,48,0.05); border: 1px solid rgba(255,184,48,0.28); }
+.banner-DECRYPTION_ERROR{ background: rgba(255,61,90,0.05); border: 1px solid rgba(255,61,90,0.28); }
+.banner-err  { background: rgba(255,61,90,0.05); border: 1px solid rgba(255,61,90,0.28); }
+.banner-info { background: rgba(58,134,255,0.05); border: 1px solid rgba(58,134,255,0.28); }
+.b-icon { font-size: 22px; flex-shrink: 0; }
+.b-status { font-weight: 700; font-size: 14px; letter-spacing: .03em; }
+.banner-VALID .b-status       { color: var(--green); }
+.banner-TAMPERED .b-status    { color: var(--red); }
+.banner-REPLAYED .b-status    { color: var(--amber); }
+.banner-INVALID_DEVICE .b-status  { color: var(--amber); }
+.banner-INVALID_FORMAT .b-status  { color: var(--amber); }
+.banner-DECRYPTION_ERROR .b-status{ color: var(--red); }
+.banner-PUBLISHED .b-status { color: var(--green); }
+.banner-err .b-status  { color: var(--red); }
+.banner-info .b-status { color: #3a86ff; }
+.b-reason { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.b-id { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); margin-left: auto; }
+
+/* PIPELINE */
+.pipe-wrap { background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; }
+.pipe { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pip { font-family: 'IBM Plex Mono', monospace; font-size: 10px; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); color: var(--muted); background: var(--bg2); }
+.pip.done  { background: rgba(0,255,157,0.07); border-color: rgba(0,255,157,0.35); color: var(--green); }
+.pip.error { background: rgba(255,61,90,0.07);  border-color: rgba(255,61,90,0.35);  color: var(--red); }
+.pip.warn  { background: rgba(255,184,48,0.07); border-color: rgba(255,184,48,0.35); color: var(--amber); }
+.pip-arr { color: var(--border2); font-size: 12px; }
+
+/* CARD */
+.card { background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin-bottom: 18px; transition: border-color .2s; }
+.card:focus-within { border-color: var(--border2); }
+
+/* FORM */
+.flbl { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .12em; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 7px; }
+input { width: 100%; font-family: 'IBM Plex Mono', monospace; font-size: 13px; padding: 10px 13px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; }
+input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,200,180,0.08); }
+input[type=number]::-webkit-inner-spin-button { opacity: .35; }
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.fld { margin-bottom: 14px; }
+@media(max-width:640px) { .g2,.g4 { grid-template-columns: 1fr 1fr; } }
+
+/* VITALS READOUT */
+.vr-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 16px; }
+@media(max-width:640px) { .vr-row { grid-template-columns: repeat(2,1fr); } }
+.vr { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; text-align: center; transition: border-color .2s; }
+.vr:hover { border-color: var(--teal); }
+.vr-num  { font-size: 22px; font-weight: 700; color: var(--teal2); }
+.vr-unit { font-size: 10px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+.vr-name { font-size: 10px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; margin-top: 4px; text-transform: uppercase; letter-spacing: .07em; }
+
+/* PREVIEW */
+.preview { font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.8; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; max-height: 200px; overflow-y: auto; white-space: pre; }
+.pk { color: #5aafff; } .pv { color: var(--teal2); } .pn { color: #80e0a0; }
+
+/* BUTTONS */
+.act-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; }
+@media(max-width:640px) { .act-grid { grid-template-columns: 1fr 1fr; } }
+.btn { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .04em; padding: 11px 16px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); color: var(--muted); background: var(--bg2); width: 100%; transition: all .2s; }
+.btn:hover { background: var(--glass); }
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn-tx { background: linear-gradient(135deg, rgba(58,134,255,0.18), rgba(94,96,206,0.1)); border-color: #3a86ff; color: #3a86ff; font-size: 13px; }
+.btn-tx:hover { box-shadow: 0 0 24px rgba(58,134,255,0.28); }
+.btn-tp { border-color: rgba(255,61,90,0.4);   color: var(--red);    background: rgba(255,61,90,0.06); }
+.btn-tp:hover { box-shadow: 0 0 16px rgba(255,61,90,0.2); }
+.btn-rp { border-color: rgba(255,184,48,0.4);  color: var(--amber);  background: rgba(255,184,48,0.06); }
+.btn-rp:hover { box-shadow: 0 0 16px rgba(255,184,48,0.2); }
+.btn-ex { border-color: rgba(192,132,252,0.4); color: var(--purple); background: rgba(192,132,252,0.06); }
+.btn-ex:hover { box-shadow: 0 0 16px rgba(192,132,252,0.2); }
+.btn-dv { border-color: rgba(255,184,48,0.3); color: #fbbf24; background: rgba(255,184,48,0.04); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.chip { font-family: 'IBM Plex Mono', monospace; font-size: 10px; padding: 3px 11px; border-radius: 20px; color: var(--muted); border: 1px solid var(--border); background: var(--bg2); }
+
+::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg2); } ::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">📡</div>
+      <div>
+        <div class="logo-name">IoMT <em>Device</em></div>
+        <div class="logo-sub">PC 1 · sender · packet transmitter</div>
+      </div>
+    </div>
+    <span class="pc-badge">PC 1 · port 5001</span>
+  </header>
+
+  <!-- Gateway connection -->
+  <div class="slbl">gateway connection</div>
+  <div class="conn-card">
+    <div class="conn-status">
+      <span class="conn-dot {{ 'ok' if fetched else 'off' }}"></span>
+      <span class="conn-label">{{ 'Authenticated with gateway — session active' if fetched else 'Not authenticated' }}</span>
+      {% if fetched %}<span class="conn-url">{{ gateway_url }}</span>{% endif %}
+    </div>
+    <div class="conn-status" style="margin-top:6px">
+      <span class="conn-dot {{ 'ok' if mqtt_connected else 'off' }}"></span>
+      <span class="conn-label">{{ 'MQTT broker connected' if mqtt_connected else 'MQTT broker not connected' }}</span>
+      <span class="conn-url">{{ mqtt_broker }}:{{ mqtt_port }}</span>
+    </div>
+    <form method="POST" action="/fetch-keys">
+      <div class="conn-row" style="margin-bottom:8px">
+        <input class="conn-input" type="text" name="gateway_url" value="{{ gateway_url }}" placeholder="http://192.168.x.x:5000">
+        <input class="conn-input" type="text" name="device_id" value="IOMT-DEV-00423" placeholder="device id" style="max-width:180px">
+      </div>
+      <div class="conn-row">
+        <button class="btn-fetch" type="submit" style="width:100%">{{ '↺ re-authenticate' if fetched else '⟳ authenticate with gateway' }}</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Result banner -->
+  {% if err %}
+  <div class="banner banner-err">
+    <span class="b-icon">✕</span>
+    <div><div class="b-status">ERROR</div><div class="b-reason">{{ err }}</div></div>
+  </div>
+  {% elif result == 'fetched' %}
+  <div class="banner banner-info">
+    <span class="b-icon">🔑</span>
+    <div><div class="b-status" style="color:#3a86ff">AUTHENTICATED</div><div class="b-reason">Session token + Kyber public key received. Device ECDSA key generated locally. Ready to send.</div></div>
+  </div>
+  {% elif status %}
+  <div class="banner banner-{{ status }}">
+    <span class="b-icon">{{ '✅' if status=='VALID' else '🚨' if status in ['TAMPERED','DECRYPTION_ERROR'] else '⟳' if status=='REPLAYED' else '⚠️' }}</span>
+    <div>
+      <div class="b-status">
+        {% if status=='VALID' %}ACCEPTED BY GATEWAY
+        {% elif status=='TAMPERED' %}TAMPER DETECTED
+        {% elif status=='REPLAYED' %}REPLAY DETECTED
+        {% elif status=='INVALID_DEVICE' %}UNKNOWN DEVICE
+        {% elif status=='INVALID_FORMAT' %}INVALID FORMAT
+        {% elif status=='DECRYPTION_ERROR' %}DECRYPTION FAILED
+        {% endif %}
+      </div>
+      <div class="b-reason">{{ reason }}</div>
+    </div>
+    <div class="b-id">PKT #{{ pkt_id }}</div>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="pipe-wrap">
+    <div class="slbl" style="margin-bottom:10px">pipeline result</div>
+    <div class="pipe">
+      <span class="pip {{ 'error' if status=='INVALID_DEVICE' else 'done' }}">session auth</span><span class="pip-arr">›</span>
+      <span class="pip {{ 'error' if status=='INVALID_FORMAT' else 'done' }}">format</span><span class="pip-arr">›</span>
+      <span class="pip done">hash packet</span><span class="pip-arr">›</span>
+      <span class="pip done">ecdsa sign</span><span class="pip-arr">›</span>
+      <span class="pip done">kyber+aes</span><span class="pip-arr">›</span>
+      <span class="pip done">transmitted ↗</span><span class="pip-arr">›</span>
+      <span class="pip {{ 'warn' if status=='REPLAYED' else 'done' }}">replay check</span><span class="pip-arr">›</span>
+      <span class="pip {{ 'error' if status=='TAMPERED' else 'done' }}">hash verify</span><span class="pip-arr">›</span>
+      <span class="pip {{ 'error' if status=='DECRYPTION_ERROR' else 'done' }}">decrypt</span><span class="pip-arr">›</span>
+      <span class="pip {{ 'done' if status=='VALID' else 'error' }}">{{ 'stored ✓' if status=='VALID' else 'rejected ✗' }}</span>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Send form -->
+  <form method="POST" action="/send">
+    <div class="slbl">device identity</div>
+    <div class="card">
+      <div class="g2">
+        <div class="fld">
+          <label class="flbl">device id</label>
+          <input type="text" name="device_id" id="f_did" value="IOMT-DEV-00423" required {{ 'disabled' if not fetched }}>
+        </div>
+        <div class="fld">
+          <label class="flbl">patient id</label>
+          <input type="text" name="patient_id" id="f_pid" value="PAT-9981" required {{ 'disabled' if not fetched }}>
+        </div>
+      </div>
+    </div>
+
+    <div class="slbl">vital signs</div>
+    <div class="card">
+      <div class="g4">
+        <div class="fld"><label class="flbl">heart rate (bpm)</label>
+          <input type="number" name="heart_rate" id="f_hr" value="82" min="30" max="220" {{ 'disabled' if not fetched }}></div>
+        <div class="fld"><label class="flbl">spo2 (%)</label>
+          <input type="number" name="spo2" id="f_spo2" value="97" min="70" max="100" {{ 'disabled' if not fetched }}></div>
+        <div class="fld"><label class="flbl">temperature (°C)</label>
+          <input type="number" step="0.1" name="temperature" id="f_temp" value="36.7" {{ 'disabled' if not fetched }}></div>
+        <div class="fld"><label class="flbl">blood pressure</label>
+          <input type="text" name="blood_pressure" id="f_bp" value="120/80" {{ 'disabled' if not fetched }}></div>
+      </div>
+      <div class="vr-row">
+        <div class="vr"><div class="vr-num" id="r_hr">82</div><div class="vr-unit">bpm</div><div class="vr-name">heart rate</div></div>
+        <div class="vr"><div class="vr-num" id="r_spo2">97</div><div class="vr-unit">%</div><div class="vr-name">spo2</div></div>
+        <div class="vr"><div class="vr-num" id="r_temp">36.7</div><div class="vr-unit">°c</div><div class="vr-name">temperature</div></div>
+        <div class="vr"><div class="vr-num" id="r_bp" style="font-size:16px">120/80</div><div class="vr-unit">mmHg</div><div class="vr-name">blood pressure</div></div>
+      </div>
+    </div>
+
+    <div class="slbl">packet preview</div>
+    <div class="card">
+      <div class="preview" id="prev"></div>
+    </div>
+
+    <div class="slbl">transmission</div>
+    <div class="card">
+      <div class="act-grid">
+        <button class="btn btn-tx" type="submit" name="action" value="normal" {{ 'disabled' if not fetched }}>▶&nbsp; transmit to gateway</button>
+        <button class="btn btn-tp" type="submit" name="action" value="tamper"    {{ 'disabled' if not fetched }}>✕&nbsp; tamper</button>
+        <button class="btn btn-rp" type="submit" name="action" value="replay"    {{ 'disabled' if not fetched }}>⟳&nbsp; replay</button>
+        <button class="btn btn-ex" type="submit" name="action" value="expired"   {{ 'disabled' if not fetched }}>⏱&nbsp; expired</button>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:10px">
+        <button class="btn btn-dv" type="submit" name="action" value="baddevice" {{ 'disabled' if not fetched }} style="padding:9px 18px">⚠&nbsp; bad session</button>
+        <button class="btn btn-tp" type="submit" name="action" value="forged"    {{ 'disabled' if not fetched }} style="padding:9px 18px">✕&nbsp; forged signature</button>
+      </div>
+      {% if not fetched %}
+      <div style="margin-top:14px; font-size:12px; color:var(--amber)">
+        ⚠ Fetch gateway keys first before sending packets.
+      </div>
+      {% endif %}
+      <div class="chips">
+        <span class="chip">Kyber512</span><span class="chip">AES-256-GCM</span>
+        <span class="chip">SHA-256 (packet)</span><span class="chip">ECDSA-P256</span>
+        <span class="chip">→ MQTT broker</span>
+      </div>
+    </div>
+  </form>
+
+</div>
+<script>
+function colorJSON(j) {
+  return j.replace(/("[\w_]+")\s*:/g, '<span class="pk">$1</span>:')
+          .replace(/:\s*("([^"]*)")/g, ': <span class="pv">$1</span>')
+          .replace(/:\s*(\d[\d.]*)/g, ': <span class="pn">$1</span>');
+}
+function buildPreview() {
+  document.getElementById('r_hr').textContent   = document.getElementById('f_hr')?.value || '82';
+  document.getElementById('r_spo2').textContent = document.getElementById('f_spo2')?.value || '97';
+  document.getElementById('r_temp').textContent = document.getElementById('f_temp')?.value || '36.7';
+  document.getElementById('r_bp').textContent   = document.getElementById('f_bp')?.value || '120/80';
+  const nonce = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,'0')).join('');
+  const p = {
+    session_token:  "[ session token from POST /auth ]",
+    device_id:  document.getElementById('f_did')?.value || 'IOMT-DEV-00423',
+    patient_id: document.getElementById('f_pid')?.value || 'PAT-9981',
+    timestamp:  new Date().toISOString().replace(/\.\d+Z$/,'Z'),
+    nonce,
+    signature:      "[ ECDSA-P256 of hash_value ]",
+    kyber_ct:       "[ Kyber512 ciphertext → gateway ]",
+    encrypted_data: "[ AES-256-GCM encrypted vitals ]"
+  };
+  document.getElementById('prev').innerHTML = colorJSON(JSON.stringify(p, null, 2));
+}
+['f_did','f_pid','f_hr','f_spo2','f_temp','f_bp'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', buildPreview);
+});
+buildPreview();
+</script>
+</body>
+</html>

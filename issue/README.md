@@ -106,6 +106,7 @@ issue/crypto_alice/
 1. Create your folder:
 
 ```bash
+cd issue
 mkdir crypto_yourname
 ```
 
