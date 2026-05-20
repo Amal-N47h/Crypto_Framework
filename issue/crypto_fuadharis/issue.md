@@ -73,7 +73,7 @@ Indexes are added to:
 
 ---
 
-## ⚠️ Security Notes
+## Security Notes
 
 * Hashing encrypted data ensures detection of storage-level tampering
 * SHA-256 without a secret key does not prove authenticity
